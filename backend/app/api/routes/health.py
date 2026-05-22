@@ -1,9 +1,16 @@
 from fastapi import APIRouter
+from sqlalchemy import text
+
+from app.db.database import engine
 
 router = APIRouter()
 
 @router.get("/health")
 def health_check():
+
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
+
     return {
-        "status": "healthy"
+        "status": "database connected"
     }

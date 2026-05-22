@@ -11,6 +11,11 @@ from app.core.security import (
     verify_password,
     create_access_token
 )
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException
+)
 
 router = APIRouter(
     prefix="/auth",
@@ -23,7 +28,19 @@ def register_user(
     user: UserCreate,
     db: Session = Depends(get_db)
 ):
+    statement = select(User).where(
+    User.email == user.email
+)
 
+    existing_user = db.execute(
+        statement
+    ).scalar_one_or_none()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
     new_user = User(
         name=user.name,
         email=user.email,

@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
-from jose import jwt
+from jose import jwt, JWTError
 from datetime import datetime, timedelta
-
+from fastapi.security import OAuth2PasswordBearer
 from app.core.config import (
     SECRET_KEY,
     ALGORITHM,
@@ -12,7 +12,9 @@ pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto"
 )
-
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/auth/login"
+)
 
 def hash_password(password: str):
     return pwd_context.hash(password)
@@ -45,3 +47,19 @@ def create_access_token(data: dict):
     )
 
     return encoded_jwt
+
+def verify_access_token(token: str):
+
+    try:
+
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
+
+        return payload
+
+    except JWTError:
+
+        return None

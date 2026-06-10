@@ -1,0 +1,46 @@
+<div class="container mt-5" style="max-width: 500px;">
+
+  <div class="card">
+
+    <div class="card-body">
+
+      <h2 class="text-center mb-4">
+        Daily Execution Tracker
+      </h2>
+
+      <h5 class="mb-3">
+        Login
+      </h5>
+
+      <label class="form-label">
+        Email
+      </label>
+
+      <input
+        type="email"
+        class="form-control mb-3"
+        [(ngModel)]="email"
+      />
+
+      <label class="form-label">
+        Password
+      </label>
+
+      <input
+        type="password"
+        class="form-control mb-3"
+        [(ngModel)]="password"
+      />
+
+      <button
+        class="btn btn-primary w-100"
+        (click)="login()"
+      >
+        Login
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

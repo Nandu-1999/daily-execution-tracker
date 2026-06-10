@@ -1,0 +1,104 @@
+<app-navbar></app-navbar>
+<div class="container mt-4" style="max-width: 900px;">
+
+  <h1 class="mb-4">
+  Task Management
+</h1>
+
+
+<div class="card mb-4">
+
+  <div class="card-body">
+
+    <h5 class="card-title">
+      Create Task
+    </h5>
+
+    <input
+      type="text"
+      class="form-control mb-3"
+      placeholder="Task Title"
+      [(ngModel)]="title"
+    />
+
+    <input
+      type="text"
+      class="form-control mb-3"
+      placeholder="Task Description"
+      [(ngModel)]="description"
+    />
+
+    <button
+      class="btn btn-primary"
+      (click)="createTask()"
+    >
+      Create Task
+    </button>
+
+  </div>
+
+</div>
+
+<hr>
+
+<p class="mb-3">
+  Total Tasks:
+  {{ tasks.length }}
+</p>
+
+@for (task of tasks; track task.id) {
+
+  <div class="card mb-3">
+
+    <div class="card-body">
+
+      <h4 class="card-title">
+      {{ task.title }}
+      </h4>
+
+      <p class="card-text">
+        {{ task.description }}
+      </p>
+
+      <div class="mb-3">
+
+  @if (task.is_completed) {
+
+    <span class="badge text-bg-success">
+      Completed
+    </span>
+
+  } @else {
+
+    <span class="badge text-bg-warning">
+      Pending
+    </span>
+
+  }
+
+</div>
+
+      @if (!task.is_completed) {
+
+        <button
+          class="btn btn-success me-2"
+          (click)="completeTask(task.id)"
+        >
+          Mark Complete
+        </button>
+
+      }
+
+      <button
+        class="btn btn-danger"
+        (click)="deleteTask(task.id)"
+      >
+        Delete
+      </button>
+
+    </div>
+
+  </div>
+
+}
+</div>

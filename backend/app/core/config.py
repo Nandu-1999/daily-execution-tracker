@@ -8,19 +8,11 @@ DATABASE_URL = os.getenv(
     "sqlite:///./ci.db"
 )
 
-SECRET_KEY = os.getenv(
-    "SECRET_KEY",
-    "dev-secret"
-)
+SECRET_KEY = os.getenv("SECRET_KEY") or "dev-secret"
 
-ALGORITHM = os.getenv(
-    "ALGORITHM",
-    "HS256"
-)
+ALGORITHM = os.getenv("ALGORITHM") or "HS256"
+
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(
-    os.getenv(
-        "ACCESS_TOKEN_EXPIRE_MINUTES",
-        "30"
-    )
+    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES") or "30"
 )

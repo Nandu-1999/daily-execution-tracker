@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: det-backend
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: det-backend
+
+  template:
+    metadata:
+      labels:
+        app: det-backend
+
+    spec:
+      containers:
+      - name: det-backend
+        image: daily-execution-tracker-backend:latest
+
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 8000
+
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: det-config
+              key: DATABASE_URL
+
+        - name: ALGORITHM
+          valueFrom:
+            configMapKeyRef:
+              name: det-config
+              key: ALGORITHM
+
+        - name: ACCESS_TOKEN_EXPIRE_MINUTES
+          valueFrom:
+            configMapKeyRef:
+              name: det-config
+              key: ACCESS_TOKEN_EXPIRE_MINUTES
+
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: det-secret
+              key: SECRET_KEY

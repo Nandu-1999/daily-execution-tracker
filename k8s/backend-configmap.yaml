@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: det-config
+
+data:
+  DATABASE_URL: postgresql://postgres:199nandu@db:5432/daily_tracker
+  ALGORITHM: HS256
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"

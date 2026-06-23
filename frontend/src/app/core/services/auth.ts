@@ -9,7 +9,7 @@ export class AuthService {
 
   private http = inject(HttpClient);
 
-  private apiUrl = 'http://127.0.0.1:8000';
+  private apiUrl = '';
 
   login(
     email: string,

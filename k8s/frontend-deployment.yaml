@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: det-frontend
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: det-frontend
+
+  template:
+    metadata:
+      labels:
+        app: det-frontend
+
+    spec:
+      containers:
+      - name: det-frontend
+        image: daily-execution-tracker-frontend:v5
+
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 80

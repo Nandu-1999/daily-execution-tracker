@@ -2,39 +2,55 @@
 
 ## Overview
 
-This folder contains the Kubernetes manifests required to deploy the Daily Execution Tracker application.
+This directory contains the Kubernetes manifests required to deploy the **Daily Execution Tracker** application on a local Kubernetes cluster using **Minikube**.
 
-### Application Architecture
+The deployment includes:
 
-```text
-Browser
-   ↓
-Ingress
-   ↓
-+-------------------+
-|   Frontend (NGINX)|
-+-------------------+
-   ↓
-+-------------------+
-| FastAPI Backend   |
-+-------------------+
-   ↓
-+-------------------+
-| PostgreSQL        |
-| (PVC-backed)      |
-+-------------------+
+* Angular Frontend
+* FastAPI Backend
+* PostgreSQL Database
+* Persistent Storage
+* ConfigMaps
+* Kubernetes Secrets
+* NGINX Ingress
+
+---
+
+# 🏗️ Kubernetes Architecture
+
+```mermaid
+flowchart TD
+
+    User["👤 Browser"]
+
+    User --> Ingress["🌐 NGINX Ingress"]
+
+    Ingress --> Frontend["🅰️ Angular Frontend
+Deployment + Service"]
+
+    Frontend --> Backend["⚡ FastAPI Backend
+Deployment + Service"]
+
+    Backend --> Postgres["🐘 PostgreSQL
+Deployment"]
+
+    Backend --> Config["⚙️ ConfigMap"]
+
+    Backend --> Secret["🔒 Kubernetes Secret"]
+
+    Postgres --> PVC["💾 Persistent Volume Claim"]
 ```
 
 ---
 
-## Components
+# Kubernetes Components
 
-### Frontend
+## Frontend
 
 * Angular application
-* Served using Nginx
-* Exposed through a Kubernetes Service
-* Accessible through Ingress
+* Served using NGINX
+* Exposed through a NodePort Service
+* Routed via Ingress
 
 Files:
 
@@ -43,12 +59,12 @@ Files:
 
 ---
 
-### Backend
+## Backend
 
-* FastAPI application
+* FastAPI REST API
 * JWT Authentication
-* Task and Activity APIs
-* Connected to PostgreSQL
+* SQLAlchemy
+* Alembic Migrations
 
 Files:
 
@@ -57,10 +73,11 @@ Files:
 
 ---
 
-### Database
+## PostgreSQL
 
 * PostgreSQL 17
-* Persistent storage using PVC
+* Persistent Volume Claim
+* ClusterIP Service
 
 Files:
 
@@ -70,17 +87,42 @@ Files:
 
 ---
 
-### Ingress
+## Configuration
 
-Ingress routes traffic based on path:
+Configuration is managed using Kubernetes ConfigMaps.
 
-| Path          | Service  |
-| ------------- | -------- |
-| `/auth`       | Backend  |
-| `/tasks`      | Backend  |
-| `/activities` | Backend  |
-| `/health`     | Backend  |
-| `/`           | Frontend |
+File:
+
+* `backend-config.yaml`
+
+---
+
+## Secrets
+
+Sensitive information is managed using Kubernetes Secrets.
+
+Examples:
+
+* Database Password
+* JWT Secret
+
+File:
+
+* `backend-secret.yaml`
+
+---
+
+## Ingress
+
+NGINX Ingress routes requests to the appropriate services.
+
+| Path          | Destination |
+| ------------- | ----------- |
+| `/auth`       | Backend     |
+| `/tasks`      | Backend     |
+| `/activities` | Backend     |
+| `/health`     | Backend     |
+| `/`           | Frontend    |
 
 File:
 
@@ -88,7 +130,7 @@ File:
 
 ---
 
-## Prerequisites
+# Prerequisites
 
 Install:
 
@@ -99,14 +141,14 @@ Install:
 Verify installation:
 
 ```bash
-minikube version
-kubectl version --client
 docker --version
+kubectl version --client
+minikube version
 ```
 
 ---
 
-## Start Minikube
+# Start Minikube
 
 ```bash
 minikube start --driver=docker
@@ -121,33 +163,41 @@ kubectl get nodes
 Expected:
 
 ```text
-NAME       STATUS   ROLES
-minikube   Ready    control-plane
+NAME        STATUS   ROLES           AGE
+minikube    Ready    control-plane
 ```
 
 ---
 
-## Load Docker Images
+# Build Docker Images
 
-Backend:
+## Backend
 
 ```bash
 docker build -t daily-execution-tracker-backend:latest .
+```
+
+```bash
 minikube image load daily-execution-tracker-backend:latest
 ```
 
-Frontend:
+---
+
+## Frontend
 
 ```bash
 docker build -t daily-execution-tracker-frontend:latest .
+```
+
+```bash
 minikube image load daily-execution-tracker-frontend:latest
 ```
 
 ---
 
-## Deploy Application
+# Deploy to Kubernetes
 
-### PostgreSQL
+## PostgreSQL
 
 ```bash
 kubectl apply -f postgres-pvc.yaml
@@ -155,41 +205,56 @@ kubectl apply -f postgres-deployment.yaml
 kubectl apply -f postgres-service.yaml
 ```
 
-### Backend
+---
+
+## ConfigMap & Secret
+
+```bash
+kubectl apply -f backend-config.yaml
+kubectl apply -f backend-secret.yaml
+```
+
+---
+
+## Backend
 
 ```bash
 kubectl apply -f backend-deployment.yaml
 kubectl apply -f backend-service.yaml
 ```
 
-### Frontend
+---
+
+## Frontend
 
 ```bash
 kubectl apply -f frontend-deployment.yaml
 kubectl apply -f frontend-service.yaml
 ```
 
-### Ingress
+---
 
-Enable ingress:
+## Ingress
+
+Enable the addon:
 
 ```bash
 minikube addons enable ingress
 ```
 
-Apply ingress:
+Apply the Ingress:
 
 ```bash
 kubectl apply -f det-ingress.yaml
 ```
 
-Run tunnel:
+Run:
 
 ```bash
 minikube tunnel
 ```
 
-Add hosts entry:
+Update your hosts file:
 
 ```text
 127.0.0.1 det.local
@@ -197,13 +262,15 @@ Add hosts entry:
 
 ---
 
-## Database Migration
+# Database Migration
 
-Run migrations inside backend pod:
+Open the backend container:
 
 ```bash
 kubectl exec -it deployment/det-backend -- sh
 ```
+
+Run:
 
 ```bash
 alembic upgrade head
@@ -217,30 +284,89 @@ alembic current
 
 ---
 
-## Useful Commands
+# Useful Commands
 
-### View Pods
+## View Resources
 
 ```bash
 kubectl get pods
+kubectl get deployments
+kubectl get services
+kubectl get pvc
+kubectl get ingress
 ```
 
-### View Services
+---
+
+## View Logs
+
+Backend
+
+```bash
+kubectl logs deployment/det-backend -f
+```
+
+Frontend
+
+```bash
+kubectl logs deployment/det-frontend -f
+```
+
+PostgreSQL
+
+```bash
+kubectl logs deployment/postgres -f
+```
+
+---
+
+## Connect to PostgreSQL
+
+```bash
+kubectl exec -it deployment/postgres -- psql -U postgres -d daily_tracker
+```
+
+---
+
+# Features Verified
+
+* Kubernetes Deployments
+* ReplicaSets
+* Services
+* ConfigMaps
+* Kubernetes Secrets
+* Persistent Volume Claims
+* PostgreSQL Deployment
+* Angular Deployment
+* FastAPI Deployment
+* JWT Authentication
+* Ingress Routing
+* Task CRUD APIs
+* Activity Summary APIs
+* Frontend ↔ Backend Communication
+* Backend ↔ PostgreSQL Communication
+
+---
+
+# Troubleshooting
+
+### Pods
+
+```bash
+kubectl get pods
+kubectl describe pod <pod-name>
+```
+
+### Services
 
 ```bash
 kubectl get services
 ```
 
-### View Deployments
+### Ingress
 
 ```bash
-kubectl get deployments
-```
-
-### View PVC
-
-```bash
-kubectl get pvc
+kubectl get ingress
 ```
 
 ### Backend Logs
@@ -249,61 +375,25 @@ kubectl get pvc
 kubectl logs deployment/det-backend -f
 ```
 
-### Frontend Logs
+### Verify Database
 
-```bash
-kubectl logs deployment/det-frontend -f
-```
-
-### PostgreSQL Access
-
-```bash
-kubectl exec -it deployment/postgres -- psql -U postgres -d daily_tracker
+```sql
+SELECT * FROM users;
 ```
 
 ---
 
-## Features Verified
+# Future Improvements
 
-* Angular frontend deployment
-* FastAPI backend deployment
-* PostgreSQL deployment
-* Persistent Volume Claims
-* JWT Authentication
-* Task CRUD
-* Activity Summary APIs
-* Ingress Routing
-* Frontend ↔ Backend communication
-* Backend ↔ Database communication
-
----
-
-## Learning Outcomes
-
-This project demonstrates:
-
-* Docker containerization
-* Kubernetes Deployments
-* ReplicaSets
-* Services
-* Persistent Storage
-* Ingress Controllers
-* Authentication with JWT
-* Multi-tier application deployment
-* Kubernetes troubleshooting and debugging
-
----
-
-## Future Improvements
-
-* ConfigMaps
-* Secrets
 * Readiness Probes
 * Liveness Probes
 * Resource Requests & Limits
-* Horizontal Pod Autoscaler
-* CI/CD Deployment Pipeline
-* Cloud Deployment (AWS/GCP/Azure)
+* Horizontal Pod Autoscaler (HPA)
+* Rolling Updates
+* Rollbacks
+* GitHub Actions CI/CD
+* Cloud Deployment (AWS, Azure, GCP)
 
-```
-```
+---
+
+This Kubernetes deployment demonstrates the deployment of a modern three-tier application using Kubernetes, including persistent storage, configuration management, authentication, and ingress-based routing.

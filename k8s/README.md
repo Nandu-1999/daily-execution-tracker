@@ -41,6 +41,7 @@ Deployment"]
     Postgres --> PVC["💾 Persistent Volume Claim"]
 ```
 
+
 ---
 
 # Kubernetes Components
